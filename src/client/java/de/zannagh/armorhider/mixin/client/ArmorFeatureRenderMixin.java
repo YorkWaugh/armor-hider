@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ArmorFeatureRenderer.class)
-public class ArmorRenderMixin {
+public class ArmorFeatureRenderMixin {
     @Unique
     private static final ThreadLocal<BipedEntityRenderState> armorHider$currentState = new ThreadLocal<>();
 

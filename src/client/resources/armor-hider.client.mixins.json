@@ -3,8 +3,9 @@
 	"package": "de.zannagh.armorhider.mixin.client",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
-      "ArmorRenderMixin",
-      "ModelPartMixin"
+      "ArmorFeatureRenderMixin",
+      "ModelPartMixin",
+      "EquipmentRenderMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

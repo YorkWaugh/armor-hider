@@ -1,4 +1,4 @@
-package de.zannagh.armorhider.mixin.client;
+package de.zannagh.armorhider;
 
 import net.minecraft.client.render.VertexConsumer;
 

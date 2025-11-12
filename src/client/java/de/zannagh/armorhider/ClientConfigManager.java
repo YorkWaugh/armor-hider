@@ -12,9 +12,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public final class ClientConfigManager {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -22,7 +20,7 @@ public final class ClientConfigManager {
 
     private static PlayerConfig CURRENT = PlayerConfig.defaults(UUID.randomUUID());
     
-    private static List<PlayerConfig> SERVERCONFIG = new ArrayList<>();
+    private static Map<UUID, PlayerConfig> SERVERCONFIG = new HashMap<>();
 
     public static void load() {
         try {
@@ -59,11 +57,14 @@ public final class ClientConfigManager {
         }
     }
     
-    public static List<PlayerConfig> getServerConfig(){ return SERVERCONFIG; }
+    public static Map<UUID, PlayerConfig> getServerConfig(){ return SERVERCONFIG; }
     
     public static void setServerConfig(List<PlayerConfig> serverConfig) {
         Armorhider.LOGGER.info("Setting server config to {}", GSON.toJson(serverConfig));
-        SERVERCONFIG = serverConfig;
+        SERVERCONFIG = new HashMap<>();
+        serverConfig.forEach(c -> {
+            SERVERCONFIG.put(c.playerId, c);
+        });
     }
 
     public static PlayerConfig get() { return CURRENT; }
