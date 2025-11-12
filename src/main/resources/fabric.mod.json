@@ -3,9 +3,9 @@
 	"id": "armor-hider",
 	"version": "${version}",
 	"name": "armor-hider",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "Small Fabric Server/Client mod to hide armor pieces based on player preferences.",
 	"authors": [
-		"Me!"
+		"zannagh"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
