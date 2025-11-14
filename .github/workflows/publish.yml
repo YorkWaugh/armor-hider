@@ -1,13 +1,12 @@
 name: publish
 on: 
   release:
-    types: [released]
   workflow_dispatch:
     
 env:
   MINECRAFT_VERSION: 1.21.10
   JAVA_VERSION: 21
-  RELEASE_NAME: ${{GITHUB_REF}}
+  RELEASE_NAME: ${{github.ref}}
   MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
 
 jobs:
