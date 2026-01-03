@@ -53,7 +53,9 @@ public abstract class SkinOptionsMixin extends Screen {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float deltaTicks){
         super.render(context, mouseX, mouseY, deltaTicks);
-        PlayerPreviewRenderer.renderPlayerPreview(context, body, mouseX, mouseY);
+        if (body != null) {
+            PlayerPreviewRenderer.renderPlayerPreview(context, body, mouseX, mouseY);
+        }
     }
     
     @Override
