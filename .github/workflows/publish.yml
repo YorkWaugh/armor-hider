@@ -45,7 +45,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: 1.21.9-${{ steps.version.outputs.majorMinorPatch }}
-          path: versions/1.21.10/build/libs/
+          path: versions/1.21.9/build/libs/
       - name: capture 1.21.10 build artifacts
         uses: actions/upload-artifact@v6
         with:
