@@ -1,5 +1,7 @@
 name: Check Modrinth Version
-description: Queries the Modrinth API and checks if a mod version already exists.
+description: >
+  Queries the Modrinth API to check if a mod version already exists
+  and detects version regression (publishing a lower prerelease than existing).
 
 inputs:
   project-id:
@@ -8,11 +10,21 @@ inputs:
   mod-version:
     description: The mod version to check for
     required: true
+  fail-on-regression:
+    description: Whether to fail the workflow if version regression is detected
+    required: false
+    default: 'true'
 
 outputs:
   version_exists:
     description: Whether the version already exists on Modrinth
     value: ${{ steps.check.outputs.exists }}
+  is_regression:
+    description: Whether this version would be a regression (lower than existing)
+    value: ${{ steps.check.outputs.is_regression }}
+  highest_prerelease:
+    description: The highest existing prerelease number for this semver on Modrinth
+    value: ${{ steps.check.outputs.highest_prerelease }}
 
 runs:
   using: composite
@@ -26,26 +38,73 @@ runs:
         echo "$VERSIONS"
 
         MOD_VERSION="${{ inputs.mod-version }}"
+        echo ""
         echo "Checking for mod version: $MOD_VERSION"
 
+        # Extract semver and prerelease number from input version
+        # Format: X.Y.Z-pre.N or X.Y.Z-preview.N
+        SEMVER=$(echo "$MOD_VERSION" | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+' || echo "")
+        PRE_NUM=$(echo "$MOD_VERSION" | grep -oE '(pre|preview)\.[0-9]+' | grep -oE '[0-9]+$' || echo "")
+
+        echo "Parsed semver: $SEMVER"
+        echo "Parsed prerelease number: $PRE_NUM"
+
         EXISTS=false
+        HIGHEST_PRERELEASE=0
+        IS_REGRESSION=false
         MOD_VERSION_PREVIEW=$(echo "$MOD_VERSION" | sed 's/-pre\./-preview./')
 
         while IFS= read -r existing; do
           [[ -z "$existing" ]] && continue
-          EXISTING_MOD_VER=$(echo "$existing" | sed -E 's/^fabric-[0-9.]+-snapshot-[0-9]+-//' | sed -E 's/^fabric-[0-9.]+-//')
+
+          # Extract mod version from full Modrinth version (strip loader and MC version prefix)
+          # Handles: fabric-1.21.11-0.7.3-pre.7, fabric-26.1-snapshot-5-0.7.3-pre.7
+          EXISTING_MOD_VER=$(echo "$existing" | sed -E 's/^fabric-[0-9.]+-snapshot-[0-9]+-//' | sed -E 's/^fabric-[0-9.]+-pre\.[0-9]+-//' | sed -E 's/^fabric-[0-9.]+-//')
           EXISTING_NORMALIZED=$(echo "$EXISTING_MOD_VER" | sed 's/-preview\./-pre./')
 
+          # Check for exact match
           if [[ "$EXISTING_NORMALIZED" == "$MOD_VERSION" ]] || \
              [[ "$EXISTING_MOD_VER" == "$MOD_VERSION" ]] || \
              [[ "$EXISTING_MOD_VER" == "$MOD_VERSION_PREVIEW" ]]; then
             EXISTS=true
-            echo "Found matching version: $existing"
-            break
+            echo "Found exact matching version: $existing"
+          fi
+
+          # Track highest prerelease number for same semver
+          if [[ -n "$SEMVER" ]]; then
+            EXISTING_SEMVER=$(echo "$EXISTING_MOD_VER" | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+' || echo "")
+            if [[ "$EXISTING_SEMVER" == "$SEMVER" ]]; then
+              EXISTING_PRE=$(echo "$EXISTING_MOD_VER" | grep -oE '(pre|preview)\.[0-9]+' | grep -oE '[0-9]+$' || echo "0")
+              if [[ -n "$EXISTING_PRE" && "$EXISTING_PRE" -gt "$HIGHEST_PRERELEASE" ]]; then
+                HIGHEST_PRERELEASE="$EXISTING_PRE"
+              fi
+            fi
           fi
         done <<< "$VERSIONS"
 
+        echo ""
+        echo "Highest existing prerelease for $SEMVER on Modrinth: $HIGHEST_PRERELEASE"
+
+        # Check for regression
+        if [[ -n "$PRE_NUM" && "$PRE_NUM" -lt "$HIGHEST_PRERELEASE" ]]; then
+          IS_REGRESSION=true
+          echo "::error::Version regression detected! Attempting to publish $MOD_VERSION but $SEMVER-pre.$HIGHEST_PRERELEASE already exists on Modrinth"
+        elif [[ -n "$PRE_NUM" && "$PRE_NUM" -le "$HIGHEST_PRERELEASE" && "$EXISTS" != "true" ]]; then
+          # Same or lower number but exact version doesn't exist (different MC version perhaps)
+          IS_REGRESSION=true
+          echo "::error::Version regression detected! Attempting to publish prerelease $PRE_NUM but prerelease $HIGHEST_PRERELEASE already exists on Modrinth"
+        fi
+
         echo "exists=$EXISTS" >> $GITHUB_OUTPUT
+        echo "is_regression=$IS_REGRESSION" >> $GITHUB_OUTPUT
+        echo "highest_prerelease=$HIGHEST_PRERELEASE" >> $GITHUB_OUTPUT
+
         if [[ "$EXISTS" == "true" ]]; then
           echo "::warning::Version $MOD_VERSION already exists on Modrinth"
+        fi
+
+        if [[ "$IS_REGRESSION" == "true" && "${{ inputs.fail-on-regression }}" == "true" ]]; then
+          echo ""
+          echo "Failing workflow due to version regression. Set fail-on-regression: false to override."
+          exit 1
         fi
