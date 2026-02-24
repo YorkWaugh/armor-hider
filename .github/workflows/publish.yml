@@ -39,22 +39,11 @@ jobs:
       prerelease_number: ${{ steps.version.outputs.preReleaseNumber }}
       full_semver: ${{ steps.version.outputs.fullSemVer }}
       commits_since: ${{ steps.version.outputs.commitsSinceVersionSource }}
-      supported_versions: ${{ steps.versions.outputs.matrix }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-
-      - name: Read Supported Versions
-        id: versions
-        run: |
-          # Generate explicit (loader, version-group) matrix from per-loader JSON
-          MATRIX=$(jq -c '[
-            (.fabric | keys[] | {minecraft: ., loader: "fabric"}),
-            (.neoforge | keys[] | {minecraft: ., loader: "neoforge"})
-          ]' supportedVersions.json)
-          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
 
       - name: Calculate Version
         id: version
@@ -146,6 +135,7 @@ jobs:
     outputs:
       mod_version: ${{ steps.mod-ver.outputs.version }}
       is_prerelease: ${{ steps.mod-ver.outputs.is_prerelease }}
+      supported_versions: ${{ steps.versions.outputs.matrix }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -172,11 +162,22 @@ jobs:
             -PsemVer="${{ steps.mod-ver.outputs.version }}" \
             -Pprerelease="${{ steps.mod-ver.outputs.is_prerelease }}"
 
+      - name: Read Supported Versions
+        id: versions
+        run: |
+          MATRIX=$(jq -c '[
+            (.fabric // {} | keys[] | {minecraft: ., loader: "fabric"}),
+            (.neoforge // {} | keys[] | {minecraft: ., loader: "neoforge"})
+          ]' staging/versions.json)
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v6
         with:
           name: armor-hider-${{ steps.mod-ver.outputs.version }}
-          path: staging/*.jar
+          path: |
+            staging/*.jar
+            staging/versions.json
           if-no-files-found: error
 
   changelog:
@@ -270,25 +271,24 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(needs.analyze.outputs.supported_versions) }}
+        include: ${{ fromJSON(needs.build.outputs.supported_versions) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-
-      - name: Get game versions
-        id: game-versions
-        run: |
-          # Get all compatible game versions for this loader/group from the per-loader JSON
-          VERSIONS=$(jq -r '."${{ matrix.loader }}"."${{ matrix.minecraft }}" // ["${{ matrix.minecraft }}"] | .[]' supportedVersions.json)
-          echo "list<<EOF" >> $GITHUB_OUTPUT
-          echo "$VERSIONS" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Download Artifacts
         uses: actions/download-artifact@v7
         with:
           name: armor-hider-${{ needs.build.outputs.mod_version }}
           path: artifacts
+
+      - name: Get game versions
+        id: game-versions
+        run: |
+          VERSIONS=$(jq -r '."${{ matrix.loader }}"."${{ matrix.minecraft }}" // ["${{ matrix.minecraft }}"] | .[]' artifacts/versions.json)
+          echo "list<<EOF" >> $GITHUB_OUTPUT
+          echo "$VERSIONS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Prepare Modrinth Upload
         id: modrinth
@@ -359,9 +359,12 @@ jobs:
     needs: [analyze, validate-version, check-modrinth, build, changelog, create-prerelease, upload-to-release, publish-modrinth]
     if: always()
     steps:
-      - name: Checkout
-        if: inputs.dry_run == true
-        uses: actions/checkout@v6
+      - name: Download Artifacts
+        if: inputs.dry_run == true && needs.build.result == 'success'
+        uses: actions/download-artifact@v7
+        with:
+          name: armor-hider-${{ needs.build.outputs.mod_version }}
+          path: artifacts
 
       - name: Generate Summary
         uses: zannagh/versionizer/workflow-summary@v1
@@ -409,8 +412,8 @@ jobs:
             echo "| ------ | ------------- | ------------- | --------------------- | ---- |"
 
             for LOADER in fabric neoforge; do
-              for GROUP in $(jq -r ".${LOADER} | keys[]" supportedVersions.json); do
-                GAME_VERSIONS=$(jq -r ".${LOADER}.\"${GROUP}\" // [\"${GROUP}\"] | join(\", \")" supportedVersions.json)
+              for GROUP in $(jq -r ".${LOADER} | keys[]" artifacts/versions.json); do
+                GAME_VERSIONS=$(jq -r ".${LOADER}.\"${GROUP}\" // [\"${GROUP}\"] | join(\", \")" artifacts/versions.json)
                 DISPLAY_LOADER="${LOADER^}"
                 echo "| ${DISPLAY_LOADER} | ${GROUP} | ${GAME_VERSIONS} | [${DISPLAY_LOADER}] ${GROUP} - ${MOD_VERSION} | ${VERSION_TYPE} |"
                 TOTAL=$((TOTAL + 1))
