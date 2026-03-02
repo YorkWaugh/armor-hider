@@ -10,19 +10,20 @@
 [![Curseforge Downloads](https://img.shields.io/curseforge/dt/1475841?logo=curseforge&style=flat&label=CurseForge)](https://www.curseforge.com/minecraft/mc-mods/armor-hider)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/AMwbYqdmQb)
 
-#### Game Versions
+#### Supported Game Versions and Loaders
 ![Static Badge](https://img.shields.io/badge/Fabric-1.20%20%3E%201.20.1-blue?logo=fabric)
 ![Static Badge](https://img.shields.io/badge/1.21%20%3E%201.21.1-blue)
 ![Static Badge](https://img.shields.io/badge/1.21.4%20%3E%201.21.11-blue)
 ![Static Badge](https://img.shields.io/badge/26.1%20snapshot-blue)
+
 ![Static Badge](https://img.shields.io/badge/Quilt-1.20%20%3E%201.20.1-purple)
 ![Static Badge](https://img.shields.io/badge/1.21%20%3E%201.21.1-purple)
 ![Static Badge](https://img.shields.io/badge/1.21.4%20%3E%201.21.11-purple)
 ![Static Badge](https://img.shields.io/badge/26.1%20snapshot-purple)
+
 ![Static Badge](https://img.shields.io/badge/NeoForge-1.20%20%3E%201.20.1-orange)
 ![Static Badge](https://img.shields.io/badge/1.21%20%3E%201.21.1-orange)
 ![Static Badge](https://img.shields.io/badge/1.21.4%20%3E%201.21.11-orange)
-
 
 A small server/client side mod to alter transparency of armor items (relayed to other players via server).
 
