@@ -24,6 +24,7 @@ public final class CommsManager {
             }
             var currentConfig = runtime.getStore().getConfig();
             sendToClient(player, currentConfig);
+            sendToClient(player, new PermissionPacket(ServerUtil.getPermissionLevelForPlayer(player, server)));
         });
 
         ServerConnectionEvents.registerJoin((player, server) -> {
@@ -126,6 +127,8 @@ public final class CommsManager {
             runtime.put(config.playerId.getValue(), config);
             var currentConfig = runtime.getStore().getConfig();
             sendToAllClientsButSender(config.playerId.getValue(), currentConfig);
+            var permissionLevel = ServerUtil.getPermissionLevelForPlayer(serverCtx.player(), serverCtx.server());
+            sendToClient(serverCtx.player(), new PermissionPacket(permissionLevel));
         } catch (Exception e) {
             ArmorHider.LOGGER.error("Failed to store player data!", e);
         }
@@ -145,15 +148,27 @@ public final class CommsManager {
             ArmorHider.LOGGER.warn("Runtime not initialized, cannot handle server settings");
             return;
         }
+        sendToClient(player, new PermissionPacket(currentPlayerPermissionLevel));
 
         if (runtime.getStore().getConfig().serverWideSettings.enableCombatDetection.getValue() == payload.enableCombatDetection.getValue()
                 && runtime.getStore().getConfig().serverWideSettings.forceArmorHiderOff.getValue() == payload.forceArmorHiderOff.getValue()) {
+            ArmorHider.LOGGER.debug(
+                    "Admin player {} attempted to update server-wide settings (combatDetection={}, forceArmorHiderOff={}), but no change detected.",
+                    player.getStringUUID(),
+                    payload.enableCombatDetection.getValue(),
+                    payload.forceArmorHiderOff.getValue()
+            );
             return;
         }
 
-        ArmorHider.LOGGER.info("Admin player {} is updating server-wide combat detection to: {}", player.getStringUUID(), payload.enableCombatDetection.getValue());
+        ArmorHider.LOGGER.debug("Admin player {} is updating server-wide settings (combatDetection={}, forceArmorHiderOff={}).",
+                player.getStringUUID(),
+                payload.enableCombatDetection.getValue(),
+                payload.forceArmorHiderOff.getValue()
+        );
         runtime.getStore().setServerCombatDetection(payload.enableCombatDetection.getValue());
         runtime.getStore().setGlobalOverride(payload.forceArmorHiderOff.getValue());
+        runtime.getStore().saveCurrent();
         sendToAllClientsButSender(player.getUUID(), runtime.getStore().getConfig());
     }
 
