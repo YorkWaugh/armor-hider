@@ -33,6 +33,8 @@ public interface IdentityCarrier {
         var mod = ActiveModification.create(playerName(), slot, item);
         if (mod != null) {
             ArmorHiderClient.RENDER_CONTEXT.setActiveModification(mod);
+        } else {
+            ArmorHiderClient.RENDER_CONTEXT.clearActiveModification();
         }
         return mod;
     }

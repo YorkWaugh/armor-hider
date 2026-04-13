@@ -1,6 +1,7 @@
 //? if >= 1.21.4 {
 package de.zannagh.armorhider.client.mixin;
 
+import de.zannagh.armorhider.client.scopes.ActiveModification;
 import de.zannagh.armorhider.client.scopes.IdentityCarrier;
 import de.zannagh.armorhider.client.scopes.IdentityStateCarrier;
 import de.zannagh.armorhider.util.ItemsUtil;
@@ -35,6 +36,11 @@ public class LivingEntityRenderStateMixin implements IdentityStateCarrier {
     @Override
     public void attachCarrier(@Nullable IdentityCarrier carrier) {
         armorHider$carrier = carrier;
+    }
+
+    @Override
+    public @Nullable IdentityCarrier getCarrier() {
+        return armorHider$carrier;
     }
 
     @Override
