@@ -1,6 +1,7 @@
 package de.zannagh.armorhider.client;
 
 import de.zannagh.armorhider.ArmorHider;
+import de.zannagh.armorhider.CompatFlags;
 import de.zannagh.armorhider.client.net.ClientCommunicationManager;
 import de.zannagh.armorhider.client.scopes.RenderContext;
 import de.zannagh.armorhider.log.DebugLogger;
@@ -18,6 +19,19 @@ public class ArmorHiderClient {
     public static int permissionLevel = 0; // Default to lowest.
     public static ClientConfigManager CLIENT_CONFIG_MANAGER = new ClientConfigManager();
     public static RenderContext RENDER_CONTEXT = new RenderContext();
+
+    public static final boolean FA_LOADED = CompatFlags.FA_LOADED || classExists("net.kenddie.fantasyarmor.FantasyArmor");
+    public static final boolean GECKOLIB_LOADED = CompatFlags.GECKOLIB_LOADED || classExists("software.bernie.geckolib.renderer.GeoArmorRenderer");
+    public static boolean ET_LOADED = CompatFlags.ET_LOADED || classExists("dev.kikugie.elytratrims.ep.ETClientEntrypoint");
+
+    private static boolean classExists(String name) {
+        try {
+            Class.forName(name, false, ArmorHiderClient.class.getClassLoader());
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
     
     /**
      * A static initializer for client-related methods (communication, payloads, etc.).
