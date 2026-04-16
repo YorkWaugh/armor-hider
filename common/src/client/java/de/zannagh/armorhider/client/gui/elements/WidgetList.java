@@ -13,16 +13,21 @@ import java.util.function.Consumer;
 public class WidgetList extends ContainerObjectSelectionList<WidgetList.WidgetEntry> {
 
     private final int contentWidth;
+    private final int itemHeight;
 
     //? if >= 1.21 {
     public WidgetList(Minecraft mc, int width, int height, int y, int itemHeight) {
         super(mc, width, height, y, itemHeight);
         this.contentWidth = width;
+        this.itemHeight = itemHeight;
     }
     //?} else {
     /*public WidgetList(Minecraft mc, int width, int height, int y, int itemHeight) {
         super(mc, width, height, y, y + height, itemHeight);
         this.contentWidth = width;
+        this.itemHeight = itemHeight;
+        this.setRenderBackground(false);
+        this.setRenderTopAndBottom(false);
     }
     *///?}
 
@@ -30,15 +35,41 @@ public class WidgetList extends ContainerObjectSelectionList<WidgetList.WidgetEn
         addEntry(new WidgetEntry(widget));
     }
 
+    public int getRowHeight() {
+        return itemHeight;
+    }
+    
     @Override
     public int getRowWidth() {
         return Math.max(0, Math.min(contentWidth - 20, 310));
     }
 
     //? if < 1.21 {
-    /*@Override
+    /*public void updateSizeAndPosition(int width, int height, int x, int y) {
+        this.updateSize(width, height, y, y + height);
+        this.x0 = x;
+        this.x1 = x + width;
+    }
+
+    @Override
     protected int getScrollbarPosition() {
-        return (this.width + this.getRowWidth()) / 2 + 4;
+        return (this.x1 + this.x0) / 2 + this.getRowWidth() / 2 + 4;
+    }
+    *///?}
+
+    //? if >= 26.1-1.pre.1 {
+    @Override
+    protected void extractListBackground(GuiGraphicsExtractor context) {
+    }
+    //?}
+    //? if >= 1.21 && < 26.1-1.pre.1 {
+    /*@Override
+    protected void renderListBackground(net.minecraft.client.gui.GuiGraphics context) {
+    }
+    *///?}
+    //? if < 1.21 {
+    /*@Override
+    protected void renderBackground(net.minecraft.client.gui.GuiGraphics context) {
     }
     *///?}
 

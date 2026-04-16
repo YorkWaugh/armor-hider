@@ -1,6 +1,6 @@
 package de.zannagh.armorhider.client.mixin;
 
-import de.zannagh.armorhider.client.gui.screens.ArmorHiderOptionsScreen;
+import de.zannagh.armorhider.client.ArmorHiderClient;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.Options;
@@ -47,6 +47,9 @@ public abstract class OptionsScreenMixin extends Screen {
             )
     )
     private <T extends LayoutElement> T interceptSpacer(GridLayout.RowHelper instance, T layoutElement, int i, Operation<T> original){
+        if (ArmorHiderClient.CLIENT_CONFIG_MANAGER.getValue().showSettingsInSkinCustomization.getValue()) {
+            return original.call(instance, layoutElement, i);
+        }
         if (layoutElement instanceof SpacerElement) {
             original.call(instance, layoutElement, i);
         }
@@ -54,11 +57,11 @@ public abstract class OptionsScreenMixin extends Screen {
                 Component.translatable("armorhider.options.mod_title"),
                 button ->
                         //? if < 1.21
-                        //this.minecraft.setScreenAndShow(new ArmorHiderOptionsScreen(this, this.options))
+                        //ArmorHiderClient.openPreferredSettingsScreen(this, this.options)
                 //? if >= 1.21
-                this.minecraft.setScreenAndShow(new ArmorHiderOptionsScreen(this, this.options))
+                ArmorHiderClient.openPreferredSettingsScreen(this, this.options)
         ).width(200).build();
-        instance.addChild(settingsButton, 2, instance.newCellSettings().paddingTop(-26).paddingBottom(6));
+        instance.addChild(settingsButton, 2);
         return layoutElement;
     }
     *///?}
@@ -72,15 +75,18 @@ public abstract class OptionsScreenMixin extends Screen {
             )
     )
     private GridLayout.RowHelper interceptSpacer(GridLayout instance, int i, Operation<GridLayout.RowHelper> original) {
+        if (ArmorHiderClient.CLIENT_CONFIG_MANAGER.getValue().showSettingsInSkinCustomization.getValue()) {
+            return original.call(instance, i);
+        }
         var returnValue = original.call(instance, i);
         var settingsButton = Button.builder(
                 Component.translatable("armorhider.options.mod_title"),
                 button ->
                         //? if < 1.21
-                        //this.minecraft.setScreenAndShow(new ArmorHiderOptionsScreen(this, this.options))
+                        //ArmorHiderClient.openPreferredSettingsScreen(this, this.options)
                         //? if >= 1.21
-                        this.minecraft.setScreenAndShow(new ArmorHiderOptionsScreen(this, this.options))).width(200).build();
-        returnValue.addChild(settingsButton, 2, instance.newCellSettings().paddingTop(-26).paddingBottom(6));
+                        ArmorHiderClient.openPreferredSettingsScreen(this, this.options)).width(200).build();
+        returnValue.addChild(settingsButton, 2);
         return returnValue;
     }
     //?}
