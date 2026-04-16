@@ -315,6 +315,8 @@ jobs:
 
       - name: Preview Modrinth Upload
         if: steps.modrinth.outputs.found == 'true'
+        env:
+          CHANGELOG: ${{ needs.changelog.outputs.user-facing }}
         run: |
           echo "=========================================="
           echo "MODRINTH UPLOAD PREVIEW"
@@ -332,7 +334,7 @@ jobs:
           echo ""
           echo "Changelog:"
           echo "---"
-          echo "${{ needs.changelog.outputs.user-facing }}"
+          printf '%s\n' "$CHANGELOG"
           echo "---"
           echo ""
           if [[ "${{ inputs.dry_run }}" != "false" ]]; then
@@ -409,6 +411,8 @@ jobs:
 
       - name: Preview CurseForge Upload
         if: steps.curseforge.outputs.found == 'true'
+        env:
+          CHANGELOG: ${{ needs.changelog.outputs.user-facing }}
         run: |
           echo "=========================================="
           echo "CURSEFORGE UPLOAD PREVIEW"
@@ -426,7 +430,7 @@ jobs:
           echo ""
           echo "Changelog:"
           echo "---"
-          echo "${{ needs.changelog.outputs.user-facing }}"
+          printf '%s\n' "$CHANGELOG"
           echo "---"
           echo ""
           if [[ "${{ inputs.dry_run }}" != "false" ]]; then
