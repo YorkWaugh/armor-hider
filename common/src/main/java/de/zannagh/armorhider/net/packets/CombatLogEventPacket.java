@@ -2,6 +2,7 @@
 package de.zannagh.armorhider.net.packets;
 
 import de.zannagh.armorhider.net.CompressedJsonCodec;
+import de.zannagh.armorhider.util.PlayerNameUtil;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -25,7 +26,7 @@ public class CombatLogEventPacket implements CustomPacketPayload {
     public UUID originator;
 
     public CombatLogEventPacket(Player player, UUID originator) {
-        this.playerName = player.getDisplayName().getString();
+        this.playerName = PlayerNameUtil.getPlayerName(player);
         this.timestamp = System.currentTimeMillis();
         this.originator = originator;
     }
@@ -40,6 +41,7 @@ public class CombatLogEventPacket implements CustomPacketPayload {
 //? if < 1.20.5 {
 /*package de.zannagh.armorhider.net.packets;
 
+import de.zannagh.armorhider.util.PlayerNameUtil;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.player.Player;
 import java.util.UUID;
@@ -53,7 +55,7 @@ public class CombatLogEventPacket {
     public UUID originator;
 
     public CombatLogEventPacket(Player player, UUID originator) {
-        this.playerName = player.getDisplayName().getString();
+        this.playerName = PlayerNameUtil.getPlayerName(player);
         this.timestamp = System.currentTimeMillis();
         this.originator = originator;
     }
