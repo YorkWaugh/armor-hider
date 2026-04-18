@@ -155,6 +155,12 @@ jobs:
       - name: Setup Gradle Environment
         uses: zannagh/versionizer/setup-gradle-env@v1
 
+      - name: Cache NeoForge NFRT Artifacts
+        uses: actions/cache@v4
+        with:
+          path: neoforge/versions/*/build/moddev/artifacts/
+          key: nfrt-${{ runner.os }}-${{ hashFiles('neoforge/versions/*/gradle.properties') }}
+
       - name: Determine Mod Version
         id: mod-ver
         uses: zannagh/versionizer/determine-version@v1
@@ -165,9 +171,6 @@ jobs:
           semver: ${{ needs.analyze.outputs.semver }}
           prerelease-number: ${{ needs.analyze.outputs.prerelease_number }}
           commits-since: ${{ needs.analyze.outputs.commits_since }}
-
-      - name: Prepare NeoForge Artifacts
-        run: ./gradlew createMinecraftArtifacts --no-parallel --max-workers=1 --stacktrace
 
       - name: Build & Stage Artifacts
         run: |
