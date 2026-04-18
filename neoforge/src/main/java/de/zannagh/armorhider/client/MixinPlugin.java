@@ -1,6 +1,5 @@
 package de.zannagh.armorhider.client;
 
-import de.zannagh.armorhider.CompatFlags;
 import de.zannagh.armorhider.util.MixinUtil;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.loading.FMLEnvironment;
@@ -67,10 +66,15 @@ public class MixinPlugin implements IMixinConfigPlugin {
     @Override
     public List<String> getMixins() {
         //? if >= 1.21.9 {
-        if (FMLEnvironment.getDist() == Dist.DEDICATED_SERVER) return List.of();
+        if (FMLEnvironment.getDist() == Dist.DEDICATED_SERVER) {
+            return List.of();
+        }
         //?} else {
-        /*if (FMLEnvironment.dist == Dist.DEDICATED_SERVER) return List.of();*/
-        //?}
+        /*
+        if (FMLEnvironment.dist == Dist.DEDICATED_SERVER) { 
+            return List.of();
+        }
+        *///?}
         var mixinsToAdd = new ArrayList<>(List.of(MIXINS));
         return MixinUtil.getMixinClassesWherePresent(PACKAGE, mixinsToAdd);
     }
@@ -86,19 +90,7 @@ public class MixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public void onLoad(String mixinPackage) {
-        if (classExists("dev.kikugie.elytratrims.ep.ETClientEntrypoint")) CompatFlags.ET_LOADED = true;
-        if (classExists("software.bernie.geckolib.renderer.GeoArmorRenderer")) CompatFlags.GECKOLIB_LOADED = true;
-        if (classExists("net.kenddie.fantasyarmor.FantasyArmor")) CompatFlags.FA_LOADED = true;
-        if (classExists("com.wildfire.render.GenderArmorLayer")) CompatFlags.WFGM_LOADED = true;
-    }
-
-    private static boolean classExists(String name) {
-        try {
-            Class.forName(name, false, MixinPlugin.class.getClassLoader());
-            return true;
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
+        MixinUtil.setCompatFlags(MixinPlugin.class.getClassLoader());
     }
 
     @Override
