@@ -41,6 +41,20 @@ public final class MixinUtil {
     }
 
     /**
+     * Checks whether a class exists on the classpath without initializing it.
+     * Uses {@code Class.forName(name, false, cl)} — the class is resolved but
+     * no static initializers run and no side effects occur.
+     */
+    public static boolean isClassAvailableWithoutLoading(ClassLoader cl, String className) {
+        try {
+            Class.forName(className, false, cl);
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
+    /**
      * Checks whether a mod is present without loading any classes.
      * <ol>
      *   <li>Probes for the exact {@code .class} resource.</li>
