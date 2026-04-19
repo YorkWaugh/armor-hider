@@ -27,15 +27,14 @@ A mod to alter the transparency or fully hide armor and equipment with multiplay
 #### Compatibility
 Armor Hider is compatible with some major mods focused around visuals. 
 
-If you're using a mod not yet supported, please open an issue on GitHub to let me know or drop a message on Discord.
-
-Current compatibility:
 - [Essential](https://github.com/SparkUniverse/Essential-Mod)
 - [Elytra Trims](https://codeberg.org/KikuGie/elytra-trims)
 - [Wildfire Gender / Female Gender Mod](https://github.com/FemaleGenderMod/FemaleGenderMod)
 - [GeckoLib](https://github.com/bernie-g/geckolib)
 - [Fantasy Armor](https://github.com/kend1e/FANTASY-ARMOR)
 - [LuckPerms](https://luckperms.net/)
+
+*If you're using a mod not yet supported, please open an issue on GitHub to let me know or drop a message on Discord.*
 
 ![Demo](https://github.com/user-attachments/assets/5e799db8-3f8c-4e30-b1e5-465d100f7b06)
 
@@ -86,6 +85,7 @@ If a host is not yet running the mod, there's a setting available which lets you
 * **Disable Armor Hider features**: Globally disable Armor Hider on your client. If the server is forcing Armor Hider
   off, this setting is overridden
 * **Disable Armor Hider for other players**: Disable Armor Hider rendering for other players' armors only. If the server is forcing Armor Hider off or the global disable is set, this setting is ignored
+* **Settings Location**: You can choose where you want Armor Hider's settings to be displayed. Currently, Armor Hider defaults to adding a 'Zannagh's Armor Hider' button to the option screen. If you flip the advanced setting to display options in Skin Customization to 'ON', Armor Hider will inject its options into the vanilla Skin Customization screen instead
 
 ### Administrative Settings
 
@@ -133,14 +133,16 @@ As mentioned before, feel free to create an issue on the GitHub repository or re
 ![Static Badge](https://img.shields.io/badge/Fabric-1.20%20%3E%201.20.1-blue?logo=fabric)
 ![Static Badge](https://img.shields.io/badge/1.21%20%3E%201.21.1-blue)
 ![Static Badge](https://img.shields.io/badge/1.21.4%20%3E%201.21.11-blue)
-![Static Badge](https://img.shields.io/badge/26.1%20snapshot-blue)
+![Static Badge](https://img.shields.io/badge/26.x-blue)
 
 ![Static Badge](https://img.shields.io/badge/Quilt-1.20%20%3E%201.20.1-purple)
 ![Static Badge](https://img.shields.io/badge/1.21%20%3E%201.21.1-purple)
 ![Static Badge](https://img.shields.io/badge/1.21.4%20%3E%201.21.11-purple)
-![Static Badge](https://img.shields.io/badge/26.1%20snapshot-purple)
+![Static Badge](https://img.shields.io/badge/26.x-purple)
 
-![Static Badge](https://img.shields.io/badge/NeoForge-1.21.4%20%3E%201.21.11-orange)
+![Static Badge](https://img.shields.io/badge/NeoForge-1.21.4%20%3E%2026.x-orange)
+
+*You can use Armor Hider with Forge on 1.20.1 through Sinytra (please note that transparency features are disabled in this configuration).*
 
 ## Versioning & Releases
 
@@ -150,8 +152,8 @@ All Minecraft versions are built from the `main` branch using [Stonecutter](http
 
 - **Prereleases** are created automatically on every push to `main` that includes code changes (commits prefixed with `ci:`, `docs:`, `build:`, or `chore:` are skipped)
 - **Releases** are created manually via GitHub Releases with version validation
-- All versions are published to [Modrinth](https://modrinth.com/mod/zannaghs-armor-hider) automatically
-- All versions are published to [CurseForge](https://www.curseforge.com/minecraft/mc-mods/armor-hider) automatically
+- All versions are published to [Modrinth](https://modrinth.com/mod/zannaghs-armor-hider) automatically on manual pre-releases or releases
+- All versions are published to [CurseForge](https://www.curseforge.com/minecraft/mc-mods/armor-hider) automatically on manual pre-releases or releases
 
 **Version format:**
 
