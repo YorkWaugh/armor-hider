@@ -31,7 +31,7 @@ jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
     needs: check-runner
-    runs-on: ${{ fromJSON(needs.check-runner.outputs.runner || '["ubuntu-latest"]') }}
+    runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash
