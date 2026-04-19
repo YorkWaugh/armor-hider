@@ -16,13 +16,17 @@ evaluationDependsOn(commonPath)
 val commonProject = project(commonPath)
 val commonSourceSets = commonProject.extensions.getByType(SourceSetContainer::class.java)
 
-// Expose common source sets for loader build scripts that need additional wiring
+// Expose common source sets and project for loader build scripts that need additional wiring
 extra["commonSourceSets"] = commonSourceSets
+extra["commonProject"] = commonProject
 
 // Carry over compile-only dependencies from common that are needed when compiling common sources
 dependencies {
     compileOnly("org.jspecify:jspecify:1.0.0")
     compileOnly("net.luckperms:api:5.4")
+    if (hasProperty("geckolib.version")) {
+        add("compileOnly", "maven.modrinth:geckolib:${findProperty("geckolib.version")}")
+    }
 }
 
 // Include common's sources in the loader's source sets for IntelliJ
