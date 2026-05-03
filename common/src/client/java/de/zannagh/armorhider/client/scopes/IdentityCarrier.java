@@ -1,6 +1,5 @@
 package de.zannagh.armorhider.client.scopes;
 
-import de.zannagh.armorhider.ArmorHider;
 import de.zannagh.armorhider.client.ArmorHiderClient;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
@@ -22,6 +21,19 @@ public interface IdentityCarrier {
     @Nullable ItemStack customHeadItem();
 
     boolean isPlayerFlying();
+    
+    @Nullable ActiveModification armorHider$getHeadMod();
+    @Nullable ActiveModification armorHider$getChestMod();
+    @Nullable ActiveModification armorHider$getLegsMod();
+    @Nullable ActiveModification armorHider$getFeetMod();
+
+    /**
+     * Creates a rendering modification for the given equipment slot and item without setting the render context.
+     * Returns {@code null} when no modification is needed.
+     */
+    default @Nullable ActiveModification getModification(@NotNull EquipmentSlot slot, @Nullable ItemStack item) {
+        return ActiveModification.create(armorHider$playerName(), slot, item);
+    }
 
     /**
      * Creates a rendering modification for the given equipment slot and item.
@@ -29,14 +41,25 @@ public interface IdentityCarrier {
      * Also sets the active context if the modification is not null via {@link RenderContext#setActiveModification(ActiveModification)} 
      */
     default @Nullable ActiveModification createModification(@NotNull EquipmentSlot slot, @Nullable ItemStack item) {
-        
-        var mod = ActiveModification.create(armorHider$playerName(), slot, item);
-        if (mod != null) {
-            ArmorHiderClient.RENDER_CONTEXT.setActiveModification(mod);
+        ActiveModification cached = switch (slot) {
+            case HEAD -> armorHider$getHeadMod();
+            case CHEST -> armorHider$getChestMod();
+            case LEGS -> armorHider$getLegsMod();
+            case FEET -> armorHider$getFeetMod();
+            default -> null;
+        };
+        ActiveModification modification;
+        if (cached != null && item != null && ItemStack.matches(cached.item(), item)) {
+            modification = cached;
+        } else {
+            modification = ActiveModification.create(armorHider$playerName(), slot, item);
+        }
+        if (modification != null) {
+            ArmorHiderClient.RENDER_CONTEXT.setActiveModification(modification);
         } else {
             ArmorHiderClient.RENDER_CONTEXT.clearActiveModification();
         }
-        return mod;
+        return modification;
     }
 
     /**

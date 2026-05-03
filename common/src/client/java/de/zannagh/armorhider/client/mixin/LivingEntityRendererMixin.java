@@ -4,6 +4,7 @@ import de.zannagh.armorhider.client.ArmorHiderClient;
 import de.zannagh.armorhider.client.scopes.ActiveModification;
 import de.zannagh.armorhider.client.scopes.IdentityCarrier;
 import de.zannagh.armorhider.client.scopes.IdentityStateCarrier;
+import de.zannagh.armorhider.log.DebugLogger;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -49,8 +50,8 @@ public abstract class LivingEntityRendererMixin
         <T extends LivingEntity, S extends LivingEntityRenderState, M extends EntityModel<? super S>> extends EntityRenderer<T, S> implements RenderLayerParent<S, M>
     //?}
     //? if < 1.21.4 {
-    //<T extends LivingEntity, M extends EntityModel<T>> extends EntityRenderer<T> implements RenderLayerParent<T, M>
-    //?}
+    /*<T extends LivingEntity, M extends EntityModel<T>> extends EntityRenderer<T> implements RenderLayerParent<T, M>
+    *///?}
     {
 
     @Shadow
@@ -94,8 +95,25 @@ public abstract class LivingEntityRendererMixin
     private void capturePlayerIdentity(LivingEntity entity, LivingEntityRenderState state, float partialTick, CallbackInfo ci) {
         if (entity instanceof IdentityCarrier carrier
                 && state instanceof IdentityStateCarrier stateCarrier
-                && state instanceof AvatarRenderState) { // Make sure we don't accidentally capture zombies or other humanoids.
+                && state instanceof AvatarRenderState avRenderState) {
             stateCarrier.attachCarrier(carrier);
+            armorHider$clearHiddenEquipment(carrier, avRenderState);
+        }
+    }
+
+    @Unique
+    private static void armorHider$clearHiddenEquipment(IdentityCarrier carrier, AvatarRenderState avRenderState) {
+        if (carrier.armorHider$getHeadMod() instanceof ActiveModification mod && mod.shouldHide()) {
+            avRenderState.headEquipment.copyAndClear();
+        }
+        if (carrier.armorHider$getChestMod() instanceof ActiveModification mod && mod.shouldHide()) {
+            avRenderState.chestEquipment.copyAndClear();
+        }
+        if (carrier.armorHider$getLegsMod() instanceof ActiveModification mod && mod.shouldHide()) {
+            avRenderState.legsEquipment.copyAndClear();
+        }
+        if (carrier.armorHider$getFeetMod() instanceof ActiveModification mod && mod.shouldHide()) {
+            avRenderState.feetEquipment.copyAndClear();
         }
     }
     //?}

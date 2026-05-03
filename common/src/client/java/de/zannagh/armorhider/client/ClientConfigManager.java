@@ -11,7 +11,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public class ClientConfigManager implements ConfigurationProvider<PlayerConfig> {
 
@@ -34,6 +37,20 @@ public class ClientConfigManager implements ConfigurationProvider<PlayerConfig> 
     public ClientConfigManager(ConfigurationProvider<PlayerConfig> configurationProvider) {
         this.playerConfigProvider = configurationProvider;
         CURRENT = load();
+    }
+    
+    private final List<Consumer<@Nullable String>> configListeners = new ArrayList<>();
+
+    public void addConfigChangeListener(Consumer<@Nullable String> listener) {
+        configListeners.add(listener);
+    }
+
+    public void removeConfigChangeListener(Consumer<@Nullable String> listener) {
+        configListeners.remove(listener);
+    }
+
+    private void notifyConfigListeners(@Nullable String playerName) {
+        List.copyOf(configListeners).forEach(l -> l.accept(playerName));
     }
 
     public void updateName(String name) {
@@ -62,6 +79,7 @@ public class ClientConfigManager implements ConfigurationProvider<PlayerConfig> 
 
     public void saveCurrent() {
         save(CURRENT);
+        notifyConfigListeners(CURRENT.playerName.getValue());
     }
 
     public PlayerConfig getDefault() {
@@ -125,6 +143,7 @@ public class ClientConfigManager implements ConfigurationProvider<PlayerConfig> 
         }
 
         serverConfiguration = serverConfig;
+        notifyConfigListeners(null);
     }
 
     public PlayerConfig getConfigForPlayer(@Nullable String playerName) {
@@ -176,6 +195,10 @@ public class ClientConfigManager implements ConfigurationProvider<PlayerConfig> 
         }
 
         return PlayerConfig.defaults(playerId, playerName);
+    }
+    
+    public void markLocalDirty() {
+        notifyConfigListeners(ArmorHiderClient.getCurrentPlayerName());
     }
     
     public PlayerConfig local() {

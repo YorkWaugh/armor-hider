@@ -8,27 +8,136 @@ package de.zannagh.armorhider.client.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import de.zannagh.armorhider.client.ArmorHiderClient;
-import de.zannagh.armorhider.client.combat.ClientCombatManager;
 import de.zannagh.armorhider.client.scopes.ActiveModification;
 import de.zannagh.armorhider.client.scopes.IdentityCarrier;
+import de.zannagh.armorhider.combat.CombatManager;
+import de.zannagh.armorhider.log.DebugLogger;
 import de.zannagh.armorhider.log.DebugTracer;
 import de.zannagh.armorhider.util.PlayerNameUtil;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import java.util.function.Consumer;
 
 @Mixin(Player.class)
-public class PlayerMixin implements IdentityCarrier {
+public abstract class PlayerMixin 
+    //? if >= 1.21.11
+    extends Avatar implements ContainerUser, IdentityCarrier {
+    //? if < 1.21.11
+    //extends LivingEntity implements IdentityCarrier {
 
     @Unique
     private boolean armorHider$needsArmRerender;
+
+    @Unique
+    private boolean armorHider$modsDirty = true;
+
+    @Unique
+    private ActiveModification armorHider$headMod;
+
+    @Unique
+    private ActiveModification armorHider$chestMod;
+
+    @Unique
+    private ActiveModification armorHider$legsMod;
+
+    @Unique
+    private ActiveModification armorHider$bootsMod;
+
+    @Unique
+    private Consumer<@Nullable String> armorHider$configListener = (changedPlayerName) -> {
+        if (changedPlayerName == null || changedPlayerName.equals(armorHider$playerName())) {
+            armorHider$modsDirty = true;
+        }
+    };
+
+    protected PlayerMixin(EntityType<? extends LivingEntity> type, Level level) {
+        super(type, level);
+    }
+
+    @Inject(method = "<init>", at = @At("TAIL"))
+    private void registerConfigListener(CallbackInfo ci) {
+        if (ArmorHiderClient.CLIENT_CONFIG_MANAGER != null) {
+            ArmorHiderClient.CLIENT_CONFIG_MANAGER.addConfigChangeListener(armorHider$configListener);
+        }
+    }
+
+    @Inject(method = "remove", at = @At("HEAD"))
+    private void unregisterConfigListener(Entity.RemovalReason reason, CallbackInfo ci) {
+        if (armorHider$configListener != null) {
+            ArmorHiderClient.CLIENT_CONFIG_MANAGER.removeConfigChangeListener(armorHider$configListener);
+            armorHider$configListener = null;
+        }
+    }
+
+    @Inject(method = "onEquipItem", at = @At("HEAD"))
+    private void markModsDirtyOnEquipChange(EquipmentSlot slot, ItemStack oldItem, ItemStack newItem, CallbackInfo ci) {
+        if (slot == EquipmentSlot.HEAD || slot == EquipmentSlot.CHEST
+                || slot == EquipmentSlot.LEGS || slot == EquipmentSlot.FEET) {
+            armorHider$modsDirty = true;
+        }
+    }
+
+    @Unique
+    private void armorHider$rebuildModsIfDirty() {
+        if (!armorHider$modsDirty) {
+            return;
+        }
+        DebugLogger.log("Rebuilding armor mods for " + armorHider$playerName());
+        armorHider$modsDirty = false;
+        armorHider$headMod = getModification(EquipmentSlot.HEAD, getItemBySlot(EquipmentSlot.HEAD));
+        armorHider$chestMod = getModification(EquipmentSlot.CHEST, getItemBySlot(EquipmentSlot.CHEST));
+        armorHider$legsMod = getModification(EquipmentSlot.LEGS, getItemBySlot(EquipmentSlot.LEGS));
+        armorHider$bootsMod = getModification(EquipmentSlot.FEET, getItemBySlot(EquipmentSlot.FEET));
+    }
+
+    @Unique
+    private boolean armorHider$isCombatActive() {
+        String name = armorHider$playerName();
+        return name != null && CombatManager.isInCombat(name);
+    }
+
+    @Nullable
+    @Override
+    public ActiveModification armorHider$getHeadMod() {
+        if (armorHider$isCombatActive()) armorHider$modsDirty = true;
+        armorHider$rebuildModsIfDirty();
+        return armorHider$headMod;
+    }
+
+    @Nullable
+    @Override
+    public ActiveModification armorHider$getChestMod() {
+        if (armorHider$isCombatActive()) armorHider$modsDirty = true;
+        armorHider$rebuildModsIfDirty();
+        if (this.isPlayerFlying() && de.zannagh.armorhider.util.ItemsUtil.itemStackContainsElytra(getItemBySlot(EquipmentSlot.CHEST))) {
+            return null;
+        }
+        return armorHider$chestMod;
+    }
+
+    @Override
+    @Nullable
+    public ActiveModification armorHider$getLegsMod() {
+        if (armorHider$isCombatActive()) armorHider$modsDirty = true;
+        armorHider$rebuildModsIfDirty();
+        return armorHider$legsMod;
+    }
+
+    @Override
+    @Nullable
+    public ActiveModification armorHider$getFeetMod() {
+        if (armorHider$isCombatActive()) armorHider$modsDirty = true;
+        armorHider$rebuildModsIfDirty();
+        return armorHider$bootsMod;
+    }
 
     @Override
     public void setNeedsArmRerender() {
@@ -90,4 +199,6 @@ public class PlayerMixin implements IdentityCarrier {
         }
         return original;
     }
+    
+    
 }
