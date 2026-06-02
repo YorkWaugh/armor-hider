@@ -58,18 +58,8 @@ public final class MekanismRenderCompat {
             return;
         }
         if (ArmorHiderClient.FIGURA_LOADED && AvatarManager.getAvatar(player) instanceof Avatar avatar) {
-            if (slot == EquipmentSlot.HEAD && avatar.renderer != null) {
-                var entityRenderer = Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(player);
-                if (entityRenderer instanceof LivingEntityRenderer<?, ?> livingRenderer) {
-                    float yaw = Mth.lerp(partialTicks, player.yBodyRotO, player.yBodyRot);
-                    avatar.renderer.ignoreVanillaVisibility = true;
-                    try {
-                        avatar.render(player, yaw, partialTicks, 1f, poseStack, bufferSource, light,
-                                OverlayTexture.NO_OVERLAY, livingRenderer, PartFilterScheme.HEAD, false, false);
-                    } finally {
-                        avatar.renderer.ignoreVanillaVisibility = false;
-                    }
-                }
+            if (slot == EquipmentSlot.HEAD) {
+                avatar.headRender(poseStack, bufferSource, light, true);
             }
             return;
         }
