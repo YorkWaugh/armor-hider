@@ -7,7 +7,7 @@
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/AMwbYqdmQb)
 
 <p align="center">
-A mod to the transparency or fully hide armor and equipment with multiplayer support, without any dependencies - supporting a wide range of game versions and available for Fabric, Quilt and NeoForge.
+A no-dependency mod to the transparency or fully hide armor and equipment with multiplayer support, without any dependencies - supporting a wide range of game versions and available for Fabric, Quilt and NeoForge with a custom built UI that makes it feel like as if it would have been shipped with the game.
 </p>
 
 <p align="center">
@@ -72,7 +72,7 @@ If you like my work and would like to support me, you can do so here:
 Find Armor Hider's settings integrated into the game via "Skin Customization" in the game settings (or via 'Zannagh's Armor Hider' on older game versions). When in-game, the mod settings feature a live preview of your changes.
 
 <p align="center">
-<img alt="Armor Hider Ingame Settings" src="https://github.com/user-attachments/assets/a8d15a03-bfd8-4fb1-a166-6d6118e523e2" />
+<img alt="Armor Hider Ingame Settings" src="https://github.com/user-attachments/assets/ac6f48ce-47db-4901-8976-b1cbeb69a14e" />
 </p>
 
 ### Armor Opacity and Adjustments
@@ -117,6 +117,9 @@ Combat events are synchronized and not only client-side, so when the server runs
 If a host is not yet running the mod, there's a setting available which lets you define whether the then 'unknown' players should have their armor rendering unaffected or carry over your own settings.
 
 ## Social Settings
+<img width="443" height="194" alt="Social Settings" src="https://github.com/user-attachments/assets/219ff981-649e-43d6-98a6-a33577f7ae06" />
+<img width="782" height="460" alt="image" src="https://github.com/user-attachments/assets/21df50da-7a1a-4e46-9d6c-e9627c82754b" />
+
 Via a social settings button you are able to adjust how Armor Hider handles other players granularly. Three main settings define how this is handled:
 - Other Players: Adjust/Vanilla sets if other players visual's get adjusted by Armor Hider at all or not (the server is able to override this)
 - Unknown Players: My Config/Global lets you choose whether players that are not running the mod (or when you're connected to a server without Armor Hider) will be rendered using your own configuration on the main screen or the global configuration
@@ -126,7 +129,7 @@ For any other player you can define an individual configuration in addition, tha
 
 ## Advanced Settings
 <p align="center">
-<img alt="Armor Hider Advanced Settings" src="https://github.com/user-attachments/assets/eb4cc6d7-50b2-4210-b57c-9d04fcdf15d9" />
+<img alt="Armor Hider Advanced Settings" src="https://github.com/user-attachments/assets/e6758b0e-226c-4c1a-a4fc-fa9cb291d2f6" />
 </p>
 
 * **Disable Armor Hider features**: Globally disable Armor Hider on your client. If the server is forcing Armor Hider
