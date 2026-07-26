@@ -31,6 +31,8 @@ Armor Hider features a big selection of [customization options](#customizability
 - **Adjustable player-configs** allow you to choose (if the server allows) how other players are drawn - both generically applied or on a per-player basis
 - **Admin controls** for server operators ([see below](#administrative-settings))
 
+![Demo](https://github.com/user-attachments/assets/8e1e345c-2eff-49d8-b7e5-2e15c5df2221)
+
 #### Compatibility
 Armor Hider has explicit compatibility with some major mods focused around visuals. 
 
@@ -51,8 +53,6 @@ Armor Hider has explicit compatibility with some major mods focused around visua
 - [Wavey Capes](https://modrinth.com/mod/wavey-capes)
 
 *If you're using a mod not yet supported, please open an issue on GitHub to let me know or drop a message on Discord.*
-
-![Demo](https://github.com/user-attachments/assets/5e799db8-3f8c-4e30-b1e5-465d100f7b06)
 
 [![OpenBugs](https://img.shields.io/github/issues-search?query=repo%3Azannagh%2Farmor-hider%20is%3Aopen%20label%3Abug&logo=github&label=Open%20Bugs&color=red
 )](https://github.com/zannagh/armor-hider/issues)
