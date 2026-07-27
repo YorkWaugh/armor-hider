@@ -1,6 +1,7 @@
 package de.zannagh.armorhider.client.common;
 
 import de.zannagh.armorhider.client.ArmorHiderClient;
+import de.zannagh.armorhider.combat.CombatManager;
 import de.zannagh.armorhider.common.ItemInfo;
 import de.zannagh.armorhider.configuration.items.ArmorOpacity;
 import de.zannagh.armorhider.net.packets.PlayerConfig;
@@ -97,14 +98,37 @@ public record SlotModification(
 
     public static SlotModification of(String playerName, EquipmentSlot slot, ItemStack itemStack) {
         var config = ArmorHiderClient.CLIENT_CONFIG_MANAGER.resolveConfig(playerName);
-        return of(config, slot).addItemInformation(new ItemInfo(itemStack));
+        // Carry the *live* name through: combat events are registered under the player's current
+        // display name, so anything that later uses this modification as a combat key must not fall
+        // back to the config's snapshot. See the identity note in of(config, slot, liveName).
+        return of(config, slot, playerName).addItemInformation(new ItemInfo(itemStack));
     }
 
     public static SlotModification of(PlayerConfig config, EquipmentSlot slot) {
+        return of(config, slot, null);
+    }
+
+    /**
+     * @param liveName the player's current display name if the caller knows it, else {@code null} to
+     *                 fall back to the name stored on the config.
+     */
+    private static SlotModification of(PlayerConfig config, EquipmentSlot slot, @Nullable String liveName) {
 
         if (shouldUseVanilla(config)) {
             return empty(slot);
         }
+
+        // Combat state is keyed by the display name the combat event was registered under
+        // (AhCombatApiImpl -> PlayerNameUtil#getPlayerName), which is the player's *live* name. The
+        // name persisted on the config is snapshotted at join and can drift on servers that rewrite
+        // display names afterwards (rank prefixes, nicks — the same drift shouldUseVanilla guards
+        // against). Keying combat off the stale snapshot would silently miss every combat event, so
+        // prefer the live name whenever the caller has it. This name is also what the resulting
+        // record carries, because downstream combat consumers (EquipmentRenderMixin's vanilla-model
+        // check, VanillaArmorTextureManager) use playerName() as a combat key too.
+        String resolvedName = liveName != null && !liveName.isBlank()
+                ? liveName
+                : config.playerName.getValue();
 
         var transparency = switch (slot) {
             case HEAD -> config.helmetOpacity.getValue();
@@ -114,6 +138,17 @@ public record SlotModification(
             case OFFHAND -> config.offHandOpacity.getValue();
             default -> 1.0;
         };
+
+        // Combat detection: a player who just took or dealt damage snaps to fully-visible armor and
+        // then fades back to their configured opacity over the combat window. This is applied here,
+        // at the single point every render path resolves its opacity through, so armor, elytra, hand
+        // items and compat layers (Female Gender Mod breast armor, GeckoLib, ...) all follow it.
+        //
+        // Raising the transparency before shouldHide/needsModification are derived is deliberate:
+        // an in-combat piece configured to 0% must stop being *hidden*, not merely become opaque.
+        if (ArmorHiderClient.CLIENT_CONFIG_MANAGER.shouldApplyCombatDetectionTo(config)) {
+            transparency = CombatManager.transformTransparencyBasedOnCombat(resolvedName, transparency);
+        }
 
         boolean disableGlint = switch (slot) {
             case HEAD -> !config.helmetGlint.getValue();
@@ -131,7 +166,7 @@ public record SlotModification(
         // the stack on hand. Initialise to ItemInfo.empty() rather than null so callers
         // (e.g. RenderModifications.modifyRenderPriority -> itemInfo.isElytra()) that
         // read it before addItemInformation runs don't trip an NPE.
-        return new SlotModification(slot, needsModification, shouldHideEntirely, disableGlint, transparency, config.playerName.getValue(), config, ItemInfo.empty());
+        return new SlotModification(slot, needsModification, shouldHideEntirely, disableGlint, transparency, resolvedName, config, ItemInfo.empty());
     }
 
     public SlotModification addItemInformation(ItemInfo itemInfo) {
